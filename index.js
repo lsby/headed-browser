@@ -60,7 +60,7 @@ function 入口() {
     })
 
     var api = {
-        waitLoading(delay = 500, time = 200, out = 10000) {
+        waitLoading(delay = 500, time = 200, out = 50000) {
             return new Promise((res, rej) => {
                 var n = 0
                 var s = null
@@ -85,6 +85,9 @@ function 入口() {
                 }, time)
             })
         },
+        async setProxy(proxyRules) {
+            await 网页窗口.webContents.session.setProxy({ proxyRules })
+        },
         async runJs(url) {
             var r = await 网页窗口内容.executeJavaScript(url, true)
             await api.waitLoading()
@@ -104,7 +107,7 @@ function 入口() {
     ipcMain.on('run_code_loc', async (event, arg) => {
         delete require.cache[require.resolve(arg)]
         var f = require(arg)
-        await f(api)
+        await f(api, 网页窗口)
         event.returnValue = null
     })
 }
