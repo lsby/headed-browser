@@ -1,4 +1,4 @@
-var { app, BrowserWindow } = require('electron')
+var { app, BrowserWindow, ipcMain } = require('electron')
 var path = require('path')
 
 app.whenReady().then(() => {
@@ -13,17 +13,40 @@ app.on('window-all-closed', function () {
 
 function 入口() {
     var 网页窗口 = new BrowserWindow({
-        width: 800,
-        height: 600,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, './网页窗口/preload.js'),
         },
     })
     网页窗口.loadURL('https://baidu.com')
-    网页窗口.webContents.openDevTools()
 
-    var 内容 = 网页窗口.webContents
-    内容.on('did-finish-load', (_) => {
-        内容.executeJavaScript('console.log(window.runjs(123))')
+    var 控制窗口 = new BrowserWindow({
+        webPreferences: {
+            preload: path.join(__dirname, './控制窗口/preload.js'),
+        },
+    })
+    控制窗口.loadFile('./控制窗口/index.html')
+
+    var 网页窗口状态 = 'loading'
+    var 网页窗口内容 = 网页窗口.webContents
+    网页窗口内容.on('did-finish-load', function () {
+        console.log('finish')
+        网页窗口状态 = 'finish'
+    })
+    网页窗口内容.on('did-start-loading', function () {
+        console.log('loading')
+        网页窗口状态 = 'loading'
+    })
+
+    ipcMain.on('control', (event, arg) => {
+        网页窗口内容.executeJavaScript(`window.control(${JSON.stringify(arg)})`)
+        event.returnValue = null
+    })
+    ipcMain.on('open_dev', (event, arg) => {
+        网页窗口.webContents.openDevTools()
+        event.returnValue = null
+    })
+    ipcMain.on('run_code', (event, arg) => {
+        网页窗口内容.executeJavaScript('location.href="https://blog.51cto.com/u_5018054/3394104"')
+        event.returnValue = null
     })
 }
