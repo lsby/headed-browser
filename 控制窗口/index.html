@@ -8,9 +8,7 @@
         <script src="./renderer.js"></script>
     </head>
     <body>
-        <div>
-            <input id="url" class="input" />
-        </div>
+        <div><label>当前地址</label> <input id="url" class="input" /></div>
         <div>
             <button id="跳转">跳转</button>
             <button id="刷新">刷新</button>
@@ -19,11 +17,16 @@
             <button id="打开控制台">打开控制台</button>
             <button id="刷新地址">刷新地址</button>
         </div>
+        <hr />
         <div>
-            <div>
-                <button id="运行本地代码">运行本地代码</button>
-                <button id="刷新并运行本地代码">刷新并运行本地代码</button>
-            </div>
+            <div><label>选择代码</label> <input id="code" type="file" /></div>
+        </div>
+        <hr />
+        <div><button id="运行代码">运行代码</button></div>
+        <hr />
+        <div>
+            <div><label>输入地址</label> <input id="inputUrl" class="input" /></div>
+            <button id="刷新并运行代码">刷新并运行代码</button>
         </div>
     </body>
 </html>

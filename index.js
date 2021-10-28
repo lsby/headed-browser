@@ -22,13 +22,14 @@ function 入口() {
     var 网页窗口内容 = 网页窗口.webContents
 
     var 控制窗口 = new BrowserWindow({
-        height: 300,
+        height: 350,
         width: 800,
         webPreferences: {
             preload: path.join(__dirname, './控制窗口/preload.js'),
         },
     })
     控制窗口.loadFile('./控制窗口/index.html')
+    控制窗口.webContents.openDevTools()
 
     var control_E = null
     ipcMain.on('control_E', function (event) {
@@ -95,11 +96,14 @@ function 入口() {
         async click(s) {
             return await api.runJs(`var a=document.querySelector('${s}');a.click()`)
         },
+        async alert(s) {
+            return await api.runJs(`alert('${s}')`)
+        },
     }
 
     ipcMain.on('run_code_loc', async (event, arg) => {
-        delete require.cache[require.resolve('./code')]
-        var f = require('./code')
+        delete require.cache[require.resolve(arg)]
+        var f = require(arg)
         await f(api)
         event.returnValue = null
     })
