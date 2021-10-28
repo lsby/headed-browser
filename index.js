@@ -29,7 +29,7 @@ function 入口() {
         },
     })
     控制窗口.loadFile('./控制窗口/index.html')
-    控制窗口.webContents.openDevTools()
+    // 控制窗口.webContents.openDevTools()
 
     var control_E = null
     ipcMain.on('control_E', function (event) {
