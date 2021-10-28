@@ -18,23 +18,32 @@ function 入口() {
         },
     })
     网页窗口.loadURL('https://baidu.com')
+    网页窗口.webContents.openDevTools()
+    var 网页窗口内容 = 网页窗口.webContents
 
     var 控制窗口 = new BrowserWindow({
+        height: 300,
+        width: 800,
         webPreferences: {
             preload: path.join(__dirname, './控制窗口/preload.js'),
         },
     })
     控制窗口.loadFile('./控制窗口/index.html')
 
-    var 网页窗口状态 = 'loading'
-    var 网页窗口内容 = 网页窗口.webContents
-    网页窗口内容.on('did-finish-load', function () {
-        console.log('finish')
-        网页窗口状态 = 'finish'
+    var control_E = null
+    ipcMain.on('control_E', function (event) {
+        control_E = event
     })
+
+    var 网页窗口状态 = 'loading'
     网页窗口内容.on('did-start-loading', function () {
-        console.log('loading')
+        // console.log('loading')
         网页窗口状态 = 'loading'
+    })
+    网页窗口内容.on('did-stop-loading', function () {
+        // console.log('finish')
+        网页窗口状态 = 'finish'
+        control_E.reply('update_url_async', 网页窗口.webContents.getURL())
     })
 
     ipcMain.on('control', (event, arg) => {
@@ -45,8 +54,53 @@ function 入口() {
         网页窗口.webContents.openDevTools()
         event.returnValue = null
     })
-    ipcMain.on('run_code', (event, arg) => {
-        网页窗口内容.executeJavaScript('location.href="https://blog.51cto.com/u_5018054/3394104"')
+    ipcMain.on('update_url', (event, arg) => {
+        event.returnValue = 网页窗口.webContents.getURL()
+    })
+
+    var api = {
+        waitLoading(delay = 500, time = 200, out = 10000) {
+            return new Promise((res, rej) => {
+                var n = 0
+                var s = null
+                var f = () => {
+                    if (网页窗口状态 == 'finish') {
+                        return res()
+                    }
+                    n++
+                    if (n * time >= out) {
+                        clearTimeout(s)
+                        return rej('timeout')
+                    }
+                    s = setTimeout(f, time)
+                }
+                setTimeout(f, delay)
+            })
+        },
+        sleep(time) {
+            return new Promise((res, rej) => {
+                setTimeout(function () {
+                    res()
+                }, time)
+            })
+        },
+        async runJs(url) {
+            var r = await 网页窗口内容.executeJavaScript(url, true)
+            await api.waitLoading()
+            return r
+        },
+        async getHtml(s) {
+            return await api.runJs(`var a=document.querySelector('${s}').outerHTML;a`)
+        },
+        async click(s) {
+            return await api.runJs(`var a=document.querySelector('${s}');a.click()`)
+        },
+    }
+
+    ipcMain.on('run_code_loc', async (event, arg) => {
+        delete require.cache[require.resolve('./code')]
+        var f = require('./code')
+        await f(api)
         event.returnValue = null
     })
 }

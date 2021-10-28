@@ -17,7 +17,19 @@ contextBridge.exposeInMainWorld('init', function () {
     document.getElementById('打开控制台').onclick = function () {
         ipcRenderer.sendSync('open_dev')
     }
-    document.getElementById('运行').onclick = function () {
-        ipcRenderer.sendSync('run_code', document.getElementById('code').value)
+    document.getElementById('刷新地址').onclick = function () {
+        document.getElementById('url').value = ipcRenderer.sendSync('update_url')
     }
+    document.getElementById('运行本地代码').onclick = function () {
+        ipcRenderer.sendSync('run_code_loc')
+    }
+    document.getElementById('刷新并运行本地代码').onclick = function () {
+        ipcRenderer.sendSync('control', { cmd: 'toUrl', data: document.getElementById('url').value })
+        ipcRenderer.sendSync('run_code_loc')
+    }
+
+    ipcRenderer.send('control_E')
+    ipcRenderer.on('update_url_async', function (event, arg) {
+        document.getElementById('url').value = arg
+    })
 })
