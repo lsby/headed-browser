@@ -28,3 +28,7 @@ npm run dev
 - getHtml: 通过 selector 选择第一个元素, 获得其 outhtml.
 - click: selector 选择一个元素, 点击它
 - alert: 弹出提示
+
+## 类似库
+
+https://github.com/puppeteer/puppeteer
